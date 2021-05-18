@@ -212,6 +212,7 @@ keep state_county stcnty year production commodity
 save production, replace
 
 *Specifications
+*This code checks whether you have duplicate values in your panel. 
 use corn_main, clear
 duplicates tag statecounty year, gen(isdup) 
 edit if isdup
@@ -243,6 +244,7 @@ foreach i in corn soy {
 		}
 	}
 
+*Merge corn and soy separately
 use corn_main, clear	
 merge m:m state_county year using soy_main
 save corn_main_extra, replace
@@ -285,6 +287,7 @@ forval z = 2019/2020 {
 		(production = l1.acres_soy i.state) if year == `z'
 		}
 
+/* Other specifications - code archived
 ren fd_price fd_price1 
 ren fd_acres fd_acres1
 merge 1:m state county year using corn_main	
@@ -302,7 +305,7 @@ xi: ivreg2 fd_acres1 l1.crops1 (fd_price1 = fd_price l1.crops) if year == 2019, 
 
 reg3 (fd_acres1 l1.crops1) (fd_price1 = fd_price l1.crops l1.production) if year == 2019
 
-/*use mfp_county, clear
+use mfp_county, clear
 replace MFP_Crops_2019 = MFP_Crops_2019 + MFP2_Crops_2019
 replace MFP_Dairy_Hogs_2019 = MFP_Dairy_Hogs_2019 + MFP2_Livestock_2019
 replace MFP_Specialty_Crops_2019 = MFP_Specialty_Crops_2019 + MFP2_Specialty_2019
