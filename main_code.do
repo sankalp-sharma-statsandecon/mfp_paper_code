@@ -123,7 +123,7 @@ foreach i in corn soy {
 	save `i'_acres_prices, replace	
 	}
 
-use 2018_2019_corn_extra, clear
+*use 2018_2019_corn_extra, clear
 **test code**
 /*
 use 2018_2019_corn, clear
