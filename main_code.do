@@ -73,7 +73,7 @@ foreach i in corn soy {
 
 **Test code**
 /*
-use Full_soy, clear
+use Full_corn, clear
 format %td quote_date
 gen year = year(quote_date)
 keep if year >= 2017
@@ -123,7 +123,6 @@ foreach i in corn soy {
 	save `i'_acres_prices, replace	
 	}
 
-*use 2018_2019_corn_extra, clear
 **test code**
 /*
 use 2018_2019_corn, clear
@@ -212,7 +211,6 @@ keep state_county stcnty year production commodity
 save production, replace
 
 *Specifications
-*This code checks whether you have duplicate values in your panel. 
 use corn_main, clear
 duplicates tag statecounty year, gen(isdup) 
 edit if isdup
@@ -226,11 +224,14 @@ gen fd_acres_soy = d.acres_soy
 *Simple model 
 foreach i in corn soy {
 	use `i'_main, clear
+	replace price_`i' = price_`i'*100
 	forval j = 2019/2020 {
-		xi: reg fd_acres_`i' l1.mfp_`i' fd_price_`i' i.state if year == `j', cluster(state)
+		xi: reg fd_acres_`i' l1.mfp_`i' l1.price_`i' i.state if year == `j', cluster(state)
 		}
 	}
 
+use corn_main, clear
+	
 *3SLS: model 1
 foreach i in corn soy {
 	use `i'_main, clear
@@ -240,11 +241,10 @@ foreach i in corn soy {
 	drop if _merge == 2
 	xtset statecounty year
 	forval j = 2019/2020 {
-		xi: reg3 (fd_acres_`i' fd_price_`i' l1.mfp_`i' i.state) (fd_price_`i' = l1.production i.state) (production = l1.acres_`i' i.state) if year == `j'
+		xi: reg3 (fd_acres_`i' l1.price_`i' l1.mfp_`i' i.state) (fd_price_`i' = l1.production i.state) (production = l1.acres_`i' i.state) if year == `j'
 		}
 	}
 
-*Merge corn and soy separately
 use corn_main, clear	
 merge m:m state_county year using soy_main
 save corn_main_extra, replace
@@ -265,10 +265,14 @@ drop if _merge == 1 | _merge == 2
 drop _merge
 keep if commodity == "corn"
 drop if acres_corn == .
+replace price_soy = price_soy*100
+replace price_corn = price_corn*100
+replace production = production/1000000
+replace acres_soy = acres_soy/1000
 xtset statecounty year
 forval z = 2019/2020 {
-		xi: reg3 (fd_acres_corn fd_price_corn l1.mfp_corn i.state) (fd_price_corn = l1.price_soy l1.production i.state) ///		
-		(production = l1.acres_corn i.state) if year == `z'
+		xi: reg3 (fd_acres_corn price_corn l1.mfp_corn i.state) (price_corn = l1.price_corn l1.price_soy l1.mfP_corn l1.production i.state) ///		
+		(production = l1.acres_corn l1.mfp_corn l1.price_corn i.state) if year == `z'
 		}
 
 *soy
@@ -282,12 +286,15 @@ drop _merge
 keep if commodity == "soybeans"
 drop if acres_soy == .
 xtset statecounty year
+replace price_soy = price_soy*100
+replace price_corn = price_corn*100
+replace production = production/1000000
+replace acres_soy = acres_soy/1000
 forval z = 2019/2020 {
-		xi: reg3 (fd_acres_soy fd_price_soy l1.mfp_soy i.state) (fd_price_soy = l1.price_corn l1.production i.state) ///		
-		(production = l1.acres_soy i.state) if year == `z'
+		xi: reg3 (fd_acres_soy l1.price_soy l1.mfp_soy i.state) (price_soy = l1.price_soy l1.price_corn l1.mfp_soy l1.production i.state) ///		
+		(production = l1.acres_soy l1.mfp_soy l1.price_soy i.state) if year == `z'
 		}
 
-/* Other specifications - code archived
 ren fd_price fd_price1 
 ren fd_acres fd_acres1
 merge 1:m state county year using corn_main	
@@ -305,7 +312,7 @@ xi: ivreg2 fd_acres1 l1.crops1 (fd_price1 = fd_price l1.crops) if year == 2019, 
 
 reg3 (fd_acres1 l1.crops1) (fd_price1 = fd_price l1.crops l1.production) if year == 2019
 
-use mfp_county, clear
+/*use mfp_county, clear
 replace MFP_Crops_2019 = MFP_Crops_2019 + MFP2_Crops_2019
 replace MFP_Dairy_Hogs_2019 = MFP_Dairy_Hogs_2019 + MFP2_Livestock_2019
 replace MFP_Specialty_Crops_2019 = MFP_Specialty_Crops_2019 + MFP2_Specialty_2019
