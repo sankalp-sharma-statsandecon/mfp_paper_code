@@ -297,7 +297,7 @@ forval z = 2019/2020 {
 		xi: reg3 (fd_acres_soy l1.price_soy l1.mfp_soy i.state) (price_soy = l1.price_soy l1.price_corn l1.mfp_soy l1.production i.state) ///		
 		(production = l1.acres_soy l1.mfp_soy l1.price_soy i.state) if year == `z'
 		}
-
+/*
 ren fd_price fd_price1 
 ren fd_acres fd_acres1
 merge 1:m state county year using corn_main	
@@ -314,7 +314,7 @@ xi: ivreg2 fd_acres l1.crops (fd_price = fd_price1 l1.crops1) if year == 2019, c
 xi: ivreg2 fd_acres1 l1.crops1 (fd_price1 = fd_price l1.crops) if year == 2019, cluster(state_county) first
 
 reg3 (fd_acres1 l1.crops1) (fd_price1 = fd_price l1.crops l1.production) if year == 2019
-
+*/
 /*use mfp_county, clear
 replace MFP_Crops_2019 = MFP_Crops_2019 + MFP2_Crops_2019
 replace MFP_Dairy_Hogs_2019 = MFP_Dairy_Hogs_2019 + MFP2_Livestock_2019
