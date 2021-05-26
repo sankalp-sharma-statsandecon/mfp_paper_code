@@ -225,6 +225,7 @@ gen fd_acres_soy = d.acres_soy
 foreach i in corn soy {
 	use `i'_main, clear
 	replace price_`i' = price_`i'*100
+	replace mfp_`i' = mfp_`i'/1000
 	forval j = 2019/2020 {
 		xi: reg fd_acres_`i' l1.mfp_`i' l1.price_`i' i.state if year == `j', cluster(state)
 		}
@@ -268,10 +269,11 @@ drop if acres_corn == .
 replace price_soy = price_soy*100
 replace price_corn = price_corn*100
 replace production = production/1000000
-replace acres_soy = acres_soy/1000
+replace mfp_corn = mfp_corn/1000
+replace acres_corn = acres_corn/1000
 xtset statecounty year
 forval z = 2019/2020 {
-		xi: reg3 (fd_acres_corn price_corn l1.mfp_corn i.state) (price_corn = l1.price_corn l1.price_soy l1.mfP_corn l1.production i.state) ///		
+		xi: reg3 (fd_acres_corn price_corn l1.mfp_corn i.state) (price_corn = l1.price_corn l1.price_soy l1.mfp_corn l1.production i.state) ///		
 		(production = l1.acres_corn l1.mfp_corn l1.price_corn i.state) if year == `z'
 		}
 
@@ -290,6 +292,7 @@ replace price_soy = price_soy*100
 replace price_corn = price_corn*100
 replace production = production/1000000
 replace acres_soy = acres_soy/1000
+replace mfp_soy = mfp_soy/1000
 forval z = 2019/2020 {
 		xi: reg3 (fd_acres_soy l1.price_soy l1.mfp_soy i.state) (price_soy = l1.price_soy l1.price_corn l1.mfp_soy l1.production i.state) ///		
 		(production = l1.acres_soy l1.mfp_soy l1.price_soy i.state) if year == `z'
